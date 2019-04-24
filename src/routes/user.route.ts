@@ -11,5 +11,8 @@ export default class UsersRoute {
 		app.route("/v1/users/register").post(
 			usersController.registerWithEmail
 		)
+		app.route("/v1/users/get").get(
+			usersController.getUserData
+		)
 	}
 }

@@ -56,6 +56,30 @@ export default class UsersController {
       return;
     }
   }
+
+  public getUserData = async (req: Request, res: Response): Promise<void> => {
+    const token = req.param('token');
+    try {
+      const user = await UsersModel.findOneByJwtToken(token);
+
+      if (user) {
+        ResponseUtils.json(res, true, { name: user.name, email: user.email });
+        return;
+      }
+      ResponseUtils.json(res, false, createError(
+        404,
+        "User is not found",
+        {}
+      ));
+    } catch (err) {
+      ResponseUtils.json(res, false, createError(
+        503,
+        "token is invalid",
+        { error: err.message }
+      ));
+      return;
+    }
+  }
 }
 
 export const usersController = new UsersController();

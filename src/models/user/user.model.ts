@@ -1,11 +1,12 @@
 import { Model, model } from 'mongoose';
-import {hash}  from 'bcrypt';
+import { hash } from 'bcrypt';
 import { User } from './user';
 import { UserSchema } from './user.schema';
 import * as jwt from 'jsonwebtoken';
 
 export class UsersModel {
   private static _collectionName: string = 'Users';
+  private static JWT_SECRET = "nbfdskmajdfvklakdfjgvl";
   private static _model: Model<User> = model<User>(
     UsersModel._collectionName,
     UserSchema
@@ -21,10 +22,15 @@ export class UsersModel {
     return await this._model.findOne(conditions).exec();
   }
 
+  //fix jwt get 
+  public static async findOneByJwtToken(token: string) {
+    const userData = JSON.stringify(await jwt.verify(token, this.JWT_SECRET))
+    return this.findOne({ _id: JSON.parse(userData).id });
+  }
+
   public static createUserJwtToken(user: User): { userToken: string, expiresIn: number } {
-    const JWT_SECRET = "nbfdskmajdfvklakdfjgvl";
     const expiresIn = 60 * 60 * 24 * 7; // one week.
-    const userToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn });
+    const userToken = jwt.sign({ id: user._id }, this.JWT_SECRET, { expiresIn });
     return {
       expiresIn,
       userToken
