@@ -8,7 +8,7 @@ export default class UsersRoute {
 			usersController.loginWithEmail
 		);
 
-		app.route("/v1/users/register/telegram").post(
+		app.route("/v1/users/register").post(
 			usersController.registerWithEmail
 		)
 	}

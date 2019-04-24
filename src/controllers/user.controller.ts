@@ -1,51 +1,60 @@
 import { Request, Response } from 'express';
-
+import { compare } from 'bcrypt';
 import { UsersModel } from '../models/user';
-import { ResponseUtils, createError } from '../utils/response'; 
+import { ResponseUtils, createError } from '../utils/response';
 
 export default class UsersController {
   public loginWithEmail = async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
-    const existed = await UsersModel.findOne({ email });
+    const { email, password } = req.body;
 
-    if (existed) {
-      ResponseUtils.json(res, true, { user: existed });
+    const user = await UsersModel.findOne({ email });
+
+    if (user) {
+      const match = await compare(password, user.password);
+      if (match) {
+        ResponseUtils.json(res, true, UsersModel.createUserJwtToken(user));
+        return;
+      }
+      ResponseUtils.json(res, false, createError(
+        403,
+        'Password is wrong',
+        { error: `User's password is not '${password}'.` }
+      ));
       return;
     }
 
     ResponseUtils.json(res, false, createError(
       404,
-      'User not found.',
-      { phone: `There are no user with phone '${email}'.` }
+      'User not found',
+      { error: `There are no user with email '${email}'.` }
     ));
   }
 
   public registerWithEmail = async (req: Request, res: Response): Promise<void> => {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     const existed = await UsersModel.findOne({ email });
 
     if (existed) {
       ResponseUtils.json(res, false, createError(
         409,
-        'User already exists.',
-        { error: `User with phone '${email}' is already registered.` }  
+        'User already exists',
+        { error: `User with email '${email}' is already registered.` }
       ));
       return;
     }
 
-    const created = await UsersModel.create(email, password);
-
-    if (!created) {
+    try {
+      const token = await UsersModel.create(name, email, password);
+      ResponseUtils.json(res, true, token);
+    } catch (err) {
       ResponseUtils.json(res, false, createError(
         503,
-        'Something went wrong :(',
-        { error: 'Internal server error while creating new User' }
+        err.message,
+        { error: err.message }
       ));
       return;
     }
-
-    ResponseUtils.json(res, true, { user: created });
   }
 }
 
