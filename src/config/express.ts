@@ -16,7 +16,7 @@ export default function () {
     if (config.useMongo) {
         mongoose.connect(config.mongodb, {
             useMongoClient: true,
-            promiseLibrary: global.Promise
+            promiseLibrary : global.Promise
         }).catch(() => { console.log('Error connecting to mongos'); });
     }
 

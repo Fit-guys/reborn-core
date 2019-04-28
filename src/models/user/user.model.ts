@@ -15,17 +15,25 @@ export class UsersModel {
   public static async create(name: string, email: string, password: string, g_id?: number) {
     let hashPassword = await hash(password, 12);
     const user = await this._model.create({ name: name, email: email, password: hashPassword });
-    return this.createUserJwtToken(user._id);
+    return this.createUserJwtToken(user);
+  }
+
+  public static async remove(conditions: any) {
+    return await this._model.remove(conditions);
+  }
+
+  public static async update(conditions: any, update: any) {
+    return await this._model.findOneAndUpdate(conditions, update, { new: true });
   }
 
   public static async findOne(conditions: any) {
-    return await this._model.findOne(conditions).exec();
+    return await this._model.findOne(conditions);
   }
 
   //fix jwt get 
   public static async findOneByJwtToken(token: string) {
     const userData = JSON.stringify(await jwt.verify(token, this.JWT_SECRET))
-    return this.findOne({ _id: JSON.parse(userData).id });
+    return await this.findOne({ _id: JSON.parse(userData).id });
   }
 
   public static createUserJwtToken(user: User): { userToken: string, expiresIn: number } {
