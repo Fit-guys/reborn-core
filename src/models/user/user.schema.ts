@@ -1,7 +1,9 @@
-import { Schema } from 'mongoose';
+import { Schema, SchemaType } from 'mongoose';
 import { isEmail } from 'validator';
+import { hash } from 'bcrypt';
+import { number } from 'prop-types';
 
-export const UserSchema: Schema = new Schema({
+const UserSchema: Schema = new Schema({
     name: {
         type: Schema.Types.String,
         trim: true,
@@ -26,7 +28,21 @@ export const UserSchema: Schema = new Schema({
     google_id: {
         type: Schema.Types.Number,
     },
-    story: {
-        type: Schema.Types.Mixed
-    }
+    story: [{
+        game_id: Schema.Types.Number,
+        score: Schema.Types.Number,
+        time: Schema.Types.String
+    }]
 });
+
+UserSchema.pre('save', function (next) {
+    hash(this.password, 12)
+        .then((hashPassword) => {
+            console.log(hashPassword);
+            this.password = hashPassword
+            next();
+        })
+
+});
+
+export default UserSchema;

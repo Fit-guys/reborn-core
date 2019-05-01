@@ -1,7 +1,6 @@
 import { Model, model } from 'mongoose';
-import { hash } from 'bcrypt';
 import { User } from './user';
-import { UserSchema } from './user.schema';
+import UserSchema from './user.schema';
 import * as jwt from 'jsonwebtoken';
 
 export class UsersModel {
@@ -13,8 +12,7 @@ export class UsersModel {
   );
 
   public static async create(name: string, email: string, password: string, g_id?: number) {
-    let hashPassword = await hash(password, 12);
-    const user = await this._model.create({ name: name, email: email, password: hashPassword });
+    const user = await this._model.create({ name: name, email: email, password: password });
     return this.createUserJwtToken(user);
   }
 
