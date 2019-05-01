@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { compare } from 'bcrypt';
 import { UsersModel } from '../models/user';
 import { ResponseUtils, createError } from '../utils/response';
+import MailHelper from '../helpers/mailer'
 
 export default class UsersController {
   public loginWithEmail = async (req: Request, res: Response): Promise<void> => {
@@ -80,6 +81,58 @@ export default class UsersController {
       return;
     }
   }
+
+  public forgotPassword = async (req: Request, res: Response): Promise<void> => {
+    const { email } = req.body;
+
+    const user = await UsersModel.findOne({ email: email });
+
+    if (user) {
+      const text = `Добрий день! Щоб відновити пароль перейдіть за посиланням`;
+      await MailHelper.sendMail(user.email, text)
+    } else {
+      ResponseUtils.json(res, false, createError(
+        403,
+        "Unknown email",
+        {}
+      ));
+    }
+
+    ResponseUtils.json(res, true);
+    return;
+  }
+
+  public changePassword = async (req: Request, res: Response): Promise<void> => {
+
+    const { newPassword } = req.body;
+
+    let user = await this.getUserByAuthHeader(req.headers.authorization)
+    if (user) {
+      user.password = newPassword
+      user.save();
+      ResponseUtils.json(res, true);
+      return;
+    }
+
+    ResponseUtils.json(res, false, createError(
+      404,
+      "User not found",
+      {}
+    ));
+    return;
+
+  }
+
+  private getUserByAuthHeader = async (header: string) => {
+    const auth = header.split(' ');
+    const type = auth[0];
+    const token = auth[1];
+    if (type == 'Bearer') {
+      return await UsersModel.findOneByJwtToken(token);
+    }
+    return null;
+  }
+
 }
 
 export const usersController = new UsersController();
