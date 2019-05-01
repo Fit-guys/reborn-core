@@ -5,5 +5,5 @@ export interface User extends Document {
   email: string;
   password: string;
   g_id: number;
-  story: object;
+  story: Array<{ game_id: number, score: number, time: string }>;
 }

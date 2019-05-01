@@ -123,6 +123,44 @@ export default class UsersController {
 
   }
 
+  public addUserStory = async (req: Request, res: Response): Promise<void> => {
+    const game_data = req.body;
+
+    let user = await this.getUserByAuthHeader(req.headers.authorization)
+    if (user) {
+      UsersModel.addUserStory(user, game_data);
+      ResponseUtils.json(res, true);
+      return;
+    }
+
+    ResponseUtils.json(res, false, createError(
+      404,
+      "User not found",
+      {}
+    ));
+    return;
+
+  }
+
+  public getUserStories = async (req: Request, res: Response): Promise<void> => {
+    const game_id = req.param('game_id');
+
+    let user = await this.getUserByAuthHeader(req.headers.authorization)
+    if (user) {
+      ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(user, +game_id) });
+      return;
+    }
+
+    ResponseUtils.json(res, false, createError(
+      404,
+      "User not found",
+      {}
+    ));
+    return;
+
+  }
+
+
   private getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');
     const type = auth[0];

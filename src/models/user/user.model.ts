@@ -42,4 +42,33 @@ export class UsersModel {
       userToken
     }
   }
+
+  public static async addUserStory(user: User, game_data: { game_id: number, score: number, time: string }) {
+
+    let game_index = user.story.findIndex(function (element) {
+      return element.game_id == game_data.game_id
+    })
+
+    if (game_index >= 0) {
+      user.story[game_index] = game_data
+    } else {
+      user.story.push(game_data);
+    }
+
+    user.markModified('story');
+    await user.save();
+    console.log(user.story);
+  }
+
+  public static getUserStories(user: User, game_id?: number): { game_id: number, score: number, time: string }[] {
+    let stories = user.story;
+    if (game_id) {
+      stories = [stories.find(function (element) {
+        return element.game_id == game_id;
+      })]
+    }
+
+    return stories;
+  }
+
 }

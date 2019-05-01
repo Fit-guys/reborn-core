@@ -1,7 +1,12 @@
-import { Schema, SchemaType } from 'mongoose';
+import { Schema } from 'mongoose';
 import { isEmail } from 'validator';
 import { hash } from 'bcrypt';
-import { number } from 'prop-types';
+
+const gameSchema: Schema = new Schema({
+    game_id: Schema.Types.Number,
+    score: Schema.Types.Number,
+    time: Schema.Types.String
+}, { usePushEach: true });
 
 const UserSchema: Schema = new Schema({
     name: {
@@ -28,21 +33,20 @@ const UserSchema: Schema = new Schema({
     google_id: {
         type: Schema.Types.Number,
     },
-    story: [{
-        game_id: Schema.Types.Number,
-        score: Schema.Types.Number,
-        time: Schema.Types.String
-    }]
-});
+    story: [gameSchema]
+}, { usePushEach: true });
 
 UserSchema.pre('save', function (next) {
-    hash(this.password, 12)
-        .then((hashPassword) => {
-            console.log(hashPassword);
-            this.password = hashPassword
-            next();
-        })
-
+    if (this.modifiedPaths().includes('password')) {
+        hash(this.password, 12)
+            .then((hashPassword) => {
+                console.log(hashPassword);
+                this.password = hashPassword
+                next();
+            })
+    } else {
+        next();
+    }
 });
 
 export default UserSchema;

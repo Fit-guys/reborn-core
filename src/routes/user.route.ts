@@ -29,6 +29,14 @@ export default class UsersRoute {
 		app.route("/v1/users/changePassword").put(
 			usersController.changePassword
 		);
+
+		app.route("/v1/users/addUserStory").post(
+			usersController.addUserStory
+		);
+
+		app.route("/v1/users/getUserStories").get(
+			usersController.getUserStories
+		);
 	
 	}
 }
