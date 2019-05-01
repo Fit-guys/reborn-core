@@ -4,7 +4,7 @@ const { google } = require('googleapis');
 
 export default class MaileHelper {
 
-    public static async sendMail(email: string, text: string) {
+    public static async sendMail(email: string, text: string, subject: string = "Відновлення пароля") {
         const OAuth2 = google.auth.OAuth2;
 
         const oauth2Client = new OAuth2(
@@ -36,7 +36,7 @@ export default class MaileHelper {
         const mailOptions = {
             from: "gromvlad12@gmail.com",
             to: email,
-            subject: "Node.js Email with Secure OAuth",
+            subject: subject,
             generateTextFromHTML: true,
             html: text
         };

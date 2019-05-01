@@ -59,27 +59,17 @@ export default class UsersController {
   }
 
   public getUserData = async (req: Request, res: Response): Promise<void> => {
-    const token = req.param('token');
-    try {
-      const user = await UsersModel.findOneByJwtToken(token);
+    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
 
-      if (user) {
-        ResponseUtils.json(res, true, { name: user.name, email: user.email });
-        return;
-      }
-      ResponseUtils.json(res, false, createError(
-        404,
-        "User is not found",
-        {}
-      ));
-    } catch (err) {
-      ResponseUtils.json(res, false, createError(
-        503,
-        "token is invalid",
-        { error: err.message }
-      ));
+    if (user && type == 'full') {
+      ResponseUtils.json(res, true, { name: user.name, email: user.email });
       return;
     }
+    ResponseUtils.json(res, false, createError(
+      404,
+      "User is not found",
+      {}
+    ));
   }
 
   public forgotPassword = async (req: Request, res: Response): Promise<void> => {
@@ -88,7 +78,8 @@ export default class UsersController {
     const user = await UsersModel.findOne({ email: email });
 
     if (user) {
-      const text = `Добрий день! Щоб відновити пароль перейдіть за посиланням`;
+      UsersModel.generateUserCode(user);
+      const text = `Добрий день! Щоб відновити пароль введіть код ${user.code}`;
       await MailHelper.sendMail(user.email, text)
     } else {
       ResponseUtils.json(res, false, createError(
@@ -106,10 +97,9 @@ export default class UsersController {
 
     const { newPassword } = req.body;
 
-    let user = await this.getUserByAuthHeader(req.headers.authorization)
+    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
     if (user) {
-      user.password = newPassword
-      user.save();
+      await UsersModel.updateUserPassword(user, newPassword);
       ResponseUtils.json(res, true);
       return;
     }
@@ -126,8 +116,8 @@ export default class UsersController {
   public addUserStory = async (req: Request, res: Response): Promise<void> => {
     const game_data = req.body;
 
-    let user = await this.getUserByAuthHeader(req.headers.authorization)
-    if (user) {
+    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
+    if (user && type == 'full') {
       UsersModel.addUserStory(user, game_data);
       ResponseUtils.json(res, true);
       return;
@@ -145,8 +135,8 @@ export default class UsersController {
   public getUserStories = async (req: Request, res: Response): Promise<void> => {
     const game_id = req.param('game_id');
 
-    let user = await this.getUserByAuthHeader(req.headers.authorization)
-    if (user) {
+    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
+    if (user && type == 'full') {
       ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(user, +game_id) });
       return;
     }
@@ -160,6 +150,23 @@ export default class UsersController {
 
   }
 
+  public checkUserCode = async (req: Request, res: Response): Promise<void> => {
+    const { email, code } = req.body;
+
+    let user = await UsersModel.findOne({ email: email });
+    if (user && user.code == code) {
+      ResponseUtils.json(res, true, UsersModel.createUserJwtToken(user, 'password'));
+      return;
+    }
+
+    ResponseUtils.json(res, false, createError(
+      403,
+      "Wrong code or email",
+      {}
+    ));
+    return;
+
+  }
 
   private getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');

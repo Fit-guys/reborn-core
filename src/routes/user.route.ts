@@ -37,6 +37,10 @@ export default class UsersRoute {
 		app.route("/v1/users/getUserStories").get(
 			usersController.getUserStories
 		);
+
+		app.route("/v1/users/checkCode").post(
+			usersController.checkUserCode
+		);
 	
 	}
 }

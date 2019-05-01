@@ -6,6 +6,8 @@ export default class Config {
 	public static routes: string = './dist/routes/**/*.js';
 	public static models: string = './dist/models/**/*.js';
 	public static useMongo: boolean = true;
+	public static jwtTokenExpiresIn = 60 * 60 * 24 * 7; // one week.
+	public static jwtTokenSecret = ""
 	public static googleClientId: string = '525413493137-c3sitd29skkge5e1io1j90h55neid5lf.apps.googleusercontent.com';
 	public static googleClientSecret: string = 'bHEub2P5LeK7hDMq60rj2Dca';
 	public static googleRedirectUrl: string = 'https://developers.google.com/oauthplayground';

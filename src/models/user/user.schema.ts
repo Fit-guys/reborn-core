@@ -25,6 +25,11 @@ const UserSchema: Schema = new Schema({
     password: {
         type: Schema.Types.String,
         trim: true,
+        required: [true, "Password is required"]
+    },
+    code: {
+        type: Schema.Types.Number,
+        trim: true,
     },
     created_date: {
         type: Schema.Types.Date,

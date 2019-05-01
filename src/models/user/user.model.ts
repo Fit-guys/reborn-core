@@ -1,6 +1,7 @@
 import { Model, model } from 'mongoose';
 import { User } from './user';
 import UserSchema from './user.schema';
+import config from '../../config/config';
 import * as jwt from 'jsonwebtoken';
 
 export class UsersModel {
@@ -24,6 +25,17 @@ export class UsersModel {
     return await this._model.findOneAndUpdate(conditions, update, { new: true });
   }
 
+  public static async updateUserPassword(user: User, password: string) {
+    user.password = password
+    await user.save();
+  }
+
+  public static async generateUserCode(user: User) {
+    user.code = Math.floor(1000 + Math.random() * 9000);
+    user.markModified('code');
+    return await user.save();
+  }
+
   public static async findOne(conditions: any) {
     return await this._model.findOne(conditions);
   }
@@ -31,14 +43,17 @@ export class UsersModel {
   //fix jwt get 
   public static async findOneByJwtToken(token: string) {
     const userData = JSON.stringify(await jwt.verify(token, this.JWT_SECRET))
-    return await this.findOne({ _id: JSON.parse(userData).id });
+    const token_data = JSON.parse(userData);
+    return {
+      user: await this.findOne({ _id: token_data.id }),
+      type: token_data.type
+    };
   }
 
-  public static createUserJwtToken(user: User): { userToken: string, expiresIn: number } {
-    const expiresIn = 60 * 60 * 24 * 7; // one week.
-    const userToken = jwt.sign({ id: user._id }, this.JWT_SECRET, { expiresIn });
+  public static createUserJwtToken(user: User, type: string = 'full'): { userToken: string, expiresIn: number } {
+    const userToken = jwt.sign({ id: user._id, type: type }, this.JWT_SECRET, { expiresIn: config.jwtTokenExpiresIn, });
     return {
-      expiresIn,
+      expiresIn: config.jwtTokenExpiresIn,
       userToken
     }
   }
