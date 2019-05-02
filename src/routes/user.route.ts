@@ -30,17 +30,19 @@ export default class UsersRoute {
 			usersController.changePassword
 		);
 
-		app.route("/v1/users/addUserStory").post(
+		app.route("/v1/users/story").post(
 			usersController.addUserStory
 		);
 
-		app.route("/v1/users/getUserStories").get(
+		app.route("/v1/users/stories").get(
 			usersController.getUserStories
 		);
 
 		app.route("/v1/users/checkCode").post(
 			usersController.checkUserCode
 		);
+
+		
 	
 	}
 }
