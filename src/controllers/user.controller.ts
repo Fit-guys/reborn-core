@@ -3,6 +3,9 @@ import { compare } from 'bcrypt';
 import { UsersModel } from '../models/user';
 import { ResponseUtils, createError } from '../utils/response';
 import MailHelper from '../helpers/mailer'
+import { StatHelper } from "../helpers/statisticHelper"
+const path = require('path');
+
 
 export default class UsersController {
   public loginWithEmail = async (req: Request, res: Response): Promise<void> => {
@@ -168,15 +171,27 @@ export default class UsersController {
 
   }
 
+  public getUserStat = async (req: Request, res: Response): Promise<void> => {
+    let users = await UsersModel.getUsers();
+    StatHelper.updateStat(users);
+    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx'), function (err) {
+      console.log(err);
+    })
+    return;
+  }
+
   private getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');
     const type = auth[0];
     const token = auth[1];
+
     if (type == 'Bearer') {
       return await UsersModel.findOneByJwtToken(token);
     }
     return null;
   }
+
+
 
 }
 

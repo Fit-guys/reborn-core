@@ -5,10 +5,10 @@ import { NextFunction } from "connect";
 export default class UsersRoute {
 	constructor(app: Express) {
 
-		app.use(function(err: Error, req: Request, res: Response, next: NextFunction) {
+		app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
 			console.error(err.stack);
 			res.status(500).send('Something broke!');
-		  });
+		});
 
 		app.route("/v1/users/login").post(
 			usersController.loginWithEmail
@@ -42,7 +42,9 @@ export default class UsersRoute {
 			usersController.checkUserCode
 		);
 
-		
-	
+		app.route("/v1/users/stat").get(
+			usersController.getUserStat
+		)
+
 	}
 }

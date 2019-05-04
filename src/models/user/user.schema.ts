@@ -15,6 +15,15 @@ const UserSchema: Schema = new Schema({
         unique: [true, "User with this already exist"],
         required: [true, "Name required"]
     },
+    role: {
+        type: Schema.Types.String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    },
+    status: {
+        type: Schema.Types.String,
+        default: 'Рядовой'
+    },
     email: {
         type: Schema.Types.String,
         trim: true,

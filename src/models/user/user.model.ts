@@ -21,6 +21,10 @@ export class UsersModel {
     return await this._model.remove(conditions);
   }
 
+  public static async getUsers() {
+    return await this._model.find();
+  }
+
   public static async update(conditions: any, update: any) {
     return await this._model.findOneAndUpdate(conditions, update, { new: true });
   }
