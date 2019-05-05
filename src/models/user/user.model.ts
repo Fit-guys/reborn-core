@@ -31,7 +31,7 @@ export class UsersModel {
 
   public static async updateUserPassword(user: User, password: string) {
     user.password = password
-    await user.save();
+    return await user.save();
   }
 
   public static async generateUserCode(user: User) {
@@ -75,8 +75,7 @@ export class UsersModel {
     }
 
     user.markModified('story');
-    await user.save();
-    console.log(user.story);
+    return await user.save();
   }
 
   public static getUserStories(user: User, game_id?: number): { game_id: number, score: number, time: string }[] {

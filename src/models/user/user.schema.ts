@@ -54,7 +54,6 @@ UserSchema.pre('save', function (next) {
     if (this.modifiedPaths().includes('password')) {
         hash(this.password, 12)
             .then((hashPassword) => {
-                console.log(hashPassword);
                 this.password = hashPassword
                 next();
             })
