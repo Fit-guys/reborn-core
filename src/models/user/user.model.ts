@@ -62,6 +62,12 @@ export class UsersModel {
     }
   }
 
+  public static async delteUserStories(user: User) {
+    user.story = [];
+    user.markModified('story');
+    return await user.save();
+  }
+
   public static async addUserStory(user: User, game_data: { game_id: number, score: number, time: string }) {
 
     let game_index = user.story.findIndex(function (element) {

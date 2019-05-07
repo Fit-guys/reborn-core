@@ -180,6 +180,22 @@ export default class UsersController {
     return;
   }
 
+  public removeUserStories = async (req: Request, res: Response): Promise<void> => {
+    let data = await this.getUserByAuthHeader(req.headers.authorization);
+    if (data.type != 'full') {
+      ResponseUtils.json(res, false, createError(
+        403,
+        'Not full token',
+        {}
+      ));
+      return;
+    }
+
+    await UsersModel.delteUserStories(data.user);
+    ResponseUtils.json(res, true);
+    return;
+  }
+
   private getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');
     const type = auth[0];

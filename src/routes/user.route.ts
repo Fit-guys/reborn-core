@@ -46,5 +46,9 @@ export default class UsersRoute {
 			usersController.getUserStat
 		)
 
+		app.route("/v1/users/stories/clean").delete(
+			usersController.removeUserStories
+		)
+
 	}
 }
