@@ -50,5 +50,9 @@ export default class UsersRoute {
 			usersController.removeUserStories
 		)
 
+		app.route("/v1/users/feedback").post(
+			usersController.sendSupportEmail
+		)
+
 	}
 }

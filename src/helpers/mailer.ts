@@ -25,25 +25,32 @@ export default class MaileHelper {
             service: "gmail",
             auth: {
                 type: "OAuth2",
-                user: "gromvlad12@gmail.com",
-                clientId: "525413493137-c3sitd29skkge5e1io1j90h55neid5lf.apps.googleusercontent.com",
-                clientSecret: "bHEub2P5LeK7hDMq60rj2Dca",
-                refreshToken: "1/NYFka0lp8t2FcS-2VnrZJjfk-CqUPTQBLk6NN1MAwz4z3jGVFLobPCJhJlQWv0bI",
+                user: "cyberunicornreborn@gmail.com",
+                clientId: config.googleClientId,
+                clientSecret: config.googleClientSecret,
+                refreshToken: config.googleRefreshToken,
                 accessToken: accessToken
             }
         });
 
         const mailOptions = {
-            from: "gromvlad12@gmail.com",
+            from: "cyberunicornreborn@gmail.com",
             to: email,
             subject: subject,
             generateTextFromHTML: true,
             html: text
         };
 
-        smtpTransport.sendMail(mailOptions, (error, response) => {
-            error ? console.log(error) : console.log(response);
-            smtpTransport.close();
+        return new Promise(function (resolve, reject) {
+            smtpTransport.sendMail(mailOptions, (error, response) => {
+                error ? console.log(error) : console.log(response);
+                if(error){
+                    reject("Error send")
+                } else {
+                    resolve("Send successful")
+                }
+                smtpTransport.close();
+            })
         });
     }
 }

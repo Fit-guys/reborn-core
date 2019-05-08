@@ -4,6 +4,7 @@ import { UsersModel } from '../models/user';
 import { ResponseUtils, createError } from '../utils/response';
 import MailHelper from '../helpers/mailer'
 import { StatHelper } from "../helpers/statisticHelper"
+import { forgotPasswordText, feedbackText } from "../config/texts"
 const path = require('path');
 
 
@@ -82,8 +83,7 @@ export default class UsersController {
 
     if (user) {
       UsersModel.generateUserCode(user);
-      const text = `Добрий день! Щоб відновити пароль введіть код ${user.code}`;
-      await MailHelper.sendMail(user.email, text)
+      await MailHelper.sendMail(user.email, forgotPasswordText(user.name, user.code.toString()))
     } else {
       ResponseUtils.json(res, false, createError(
         403,
@@ -174,7 +174,7 @@ export default class UsersController {
   public getUserStat = async (req: Request, res: Response): Promise<void> => {
     let users = await UsersModel.getUsers();
     StatHelper.updateStat(users);
-    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx'), function (err) {
+    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx', 'reports.xls'), function (err) {
       console.log(err);
     })
     return;
@@ -196,6 +196,13 @@ export default class UsersController {
     return;
   }
 
+  public sendSupportEmail = async (req: Request, res: Response): Promise<void> => {
+    let { email, name, text } = req.body;
+    console.log(await MailHelper.sendMail(email, feedbackText(name, text), 'Підтвердження відправки листа розробникам'));
+    ResponseUtils.json(res, true);
+    return;
+  }
+
   private getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');
     const type = auth[0];
@@ -206,9 +213,6 @@ export default class UsersController {
     }
     return null;
   }
-
-
-
 }
 
 export const usersController = new UsersController();
