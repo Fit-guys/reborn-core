@@ -5,6 +5,8 @@ import * as express from 'express';
 import * as logger from 'morgan';
 import * as path from 'path';
 import * as mongoose from 'mongoose';
+const cors = require('cors')
+
 
 export default function () {
     var app: express.Express = express();
@@ -22,6 +24,7 @@ export default function () {
 
     app.set('view engine', 'pug');
 
+    app.use(cors())
     app.use(logger('dev'));
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: false }));
