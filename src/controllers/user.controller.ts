@@ -121,7 +121,7 @@ export default class UsersController {
 
     let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
     if (user && type == 'full') {
-      UsersModel.addUserStory(user, game_data);
+      await UsersModel.addUserStory(user, game_data);
       ResponseUtils.json(res, true);
       return;
     }

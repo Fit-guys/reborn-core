@@ -8,5 +8,5 @@ export interface User extends Document {
   role: string;
   status: string;
   g_id: number;
-  story: Array<{ game_id: number, score: number, time: string }>;
+  story: Array<{ game_id: number, score: number, time: number }>;
 }

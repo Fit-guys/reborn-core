@@ -5,7 +5,7 @@ import * as express from 'express';
 import * as logger from 'morgan';
 import * as path from 'path';
 import * as mongoose from 'mongoose';
-const cors = require('cors')
+import cors = require('cors');
 
 
 export default function () {

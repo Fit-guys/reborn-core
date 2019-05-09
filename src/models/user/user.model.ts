@@ -68,7 +68,7 @@ export class UsersModel {
     return await user.save();
   }
 
-  public static async addUserStory(user: User, game_data: { game_id: number, score: number, time: string }) {
+  public static async addUserStory(user: User, game_data: { game_id: number, score: number, time: number }) {
 
     let game_index = user.story.findIndex(function (element) {
       return element.game_id == game_data.game_id
@@ -84,7 +84,7 @@ export class UsersModel {
     return await user.save();
   }
 
-  public static getUserStories(user: User, game_id?: number): { game_id: number, score: number, time: string }[] {
+  public static getUserStories(user: User, game_id?: number): { game_id: number, score: number, time: number }[] {
     let stories = user.story;
     if (game_id) {
       stories = [stories.find(function (element) {
