@@ -1,6 +1,5 @@
 import { User } from "../models/user/user";
 import { UsersModel } from '../models/user';
-import { number } from "prop-types";
 
 export default class UserHelper {
 
@@ -13,15 +12,7 @@ export default class UserHelper {
         'Генерал'
     ];
     public static getUserStatus(user: User) {
-        const stories = UsersModel.getUserStories(user);
-        let totalScore = 0;
-        let totalTime = 0;
-        stories.forEach(function (element) {
-            totalScore += element.score;
-            totalTime += element.time
-        })
-
-        const sum = totalScore - totalTime * 0.1
+        const sum = user.totalScore - user.totalTime * 0.1
         if (sum > 5000) {
             return this.userStatuses[5];
         } else if (sum > 4000) {
@@ -35,7 +26,17 @@ export default class UserHelper {
         } else {
             return this.userStatuses[0];
         }
+    }
 
+    public static getTotalScoreAndTime(user: User) {
+        const stories = UsersModel.getUserStories(user);
+        let totalScore = 0;
+        let totalTime = 0;
+        stories.forEach(function (element) {
+            totalScore += element.score;
+            totalTime += element.time
+        })
 
+        return { totalTime, totalScore }
     }
 }

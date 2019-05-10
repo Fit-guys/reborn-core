@@ -173,8 +173,8 @@ export default class UsersController {
 
   public getUserStat = async (req: Request, res: Response): Promise<void> => {
     let users = await UsersModel.getUsers();
-    StatHelper.updateStat(users);
-    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx', 'reports.xls'), function (err) {
+    StatHelper.updateStatistic(users);
+    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx'), function (err) {
       console.log(err);
     })
     return;

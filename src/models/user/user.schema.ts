@@ -49,7 +49,13 @@ const UserSchema: Schema = new Schema({
     google_id: {
         type: Schema.Types.Number,
     },
-    story: [gameSchema]
+    story: [gameSchema],
+    totalScore: {
+        type: Schema.Types.Number,
+    },
+    totalTime: {
+        type: Schema.Types.Number,
+    }
 }, { usePushEach: true });
 
 UserSchema.pre('save', function (next) {
@@ -60,7 +66,10 @@ UserSchema.pre('save', function (next) {
                 next();
             })
     } else if (this.modifiedPaths().includes('story')) {
-        this.status = UserHelper.getUserStatus(this)
+        const {totalTime, totalScore} = UserHelper.getTotalScoreAndTime(this);
+        this.totalTime = totalTime;
+        this.totalScore = totalScore;
+        this.status = UserHelper.getUserStatus(this);
         next();
     } else {
         next();

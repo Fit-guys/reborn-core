@@ -26,6 +26,7 @@
     "fresh": "^0.5.2",
     "gapi": "0.0.3",
     "glob": "^5.0.14",
+    "google-spreadsheet": "^2.0.3",
     "googleapis": "^39.2.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11",
