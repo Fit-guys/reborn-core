@@ -66,7 +66,15 @@ export default class UsersController {
     let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
 
     if (user && type == 'full') {
-      ResponseUtils.json(res, true, { user: user });
+      ResponseUtils.json(res, true, {
+        email: user.email,
+        name: user.name,
+        story: user.story,
+        role: user.role,
+        status: user.status,
+        totalScore: user.totalScore,
+        totalTime: user.totalTime
+      });
       return;
     }
     ResponseUtils.json(res, false, createError(
