@@ -3,6 +3,8 @@ import { after } from 'mocha';
 import config from "../src/config/config";
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
+import UserHelper from '../src/helpers/userHelper';
+import { StatHelper } from '../src/helpers/statisticHelper';
 
 chai.use(chaiHttp)
 
@@ -41,15 +43,14 @@ describe('Endpoints test', () => {
   })
 
   it('get user data by jwt token', () => {
-
     return chai.request("localhost:3000")
       .get(`/v1/users/get`)
       .set('Authorization', `Bearer ${token}`)
       .then((res) => {
         chai.expect(res.status).to.eql(200);
         chai.expect(res.body.status).to.eql(true);
-        chai.expect(res.body.name).to.eql(testName);
-        chai.expect(res.body.email).to.eql(testEmail);
+        chai.expect(res.body.user.name).to.eql(testName);
+        chai.expect(res.body.user.email).to.eql(testEmail);
       })
   })
 
@@ -97,17 +98,42 @@ describe('Endpoints test', () => {
       })
   })
 
-  it('Get statistic', () => {
+  it('Update statistic', () => {
     return chai.request("localhost:3000")
-      .get(`/v1/users/stat`)
+      .post(`/v1/users/stat`)
       .then((res) => {
         chai.expect(res.status).to.eql(200);
-        chai.expect(res).to.have.header('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        chai.expect(res.body.status).to.eql(true);
       })
   })
 
+  it('Can delete user stories', () => {
+    return chai.request("localhost:3000")
+      .delete(`/v1/users/stories/clean`)
+      .set('Authorization', `Bearer ${token}`)
+      .then((res) => {
+        chai.expect(res.status).to.eql(200);
+        chai.expect(res.body.status).to.eql(true);
+      })
+  })
+
+  it('Can send message to support', () => {
+    return chai.request("localhost:3000")
+      .post(`/v1/users/feedback`)
+      .send({ email: testEmail, text: "Test text", name: 'Test name' })
+      .then((res) => {
+        chai.expect(res.status).to.eql(200);
+        chai.expect(res.body.status).to.eql(true);
+      })
+  })
 
   after(() => {
-    UsersModel.remove({ name: testName });
+    UsersModel.remove({ email: testEmail })
+      .then(() => {
+        return UsersModel.getUsers();
+      })
+      .then((users: User[]) => {
+        StatHelper.updateStatistic(users);
+      })
   })
 })

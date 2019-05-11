@@ -9,7 +9,7 @@ describe("UserModel Test", function () {
     const testName = "TestName";
     const testEmail = "Test@gmail.com";
     const testPassword = "qwerty";
-    const story = { game_id: 1, score: 100, time: '11' };
+    const story = { game_id: 1, score: 100, time: 11 };
     let token = "";
 
 
@@ -138,6 +138,17 @@ describe("UserModel Test", function () {
                 }) >= 0) {
                     done();
                 }
+            })
+            .catch((err) => {
+                done(new Error(err));
+            })
+    });
+
+    it('Can delete user stories', (done) => {
+        UsersModel.findOneByJwtToken(token)
+            .then((result) => {
+                UsersModel.delteUserStories(result.user)
+                done();
             })
             .catch((err) => {
                 done(new Error(err));

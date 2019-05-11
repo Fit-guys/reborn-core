@@ -67,13 +67,15 @@ export default class UsersController {
 
     if (user && type == 'full') {
       ResponseUtils.json(res, true, {
-        email: user.email,
-        name: user.name,
-        story: user.story,
-        role: user.role,
-        status: user.status,
-        totalScore: user.totalScore,
-        totalTime: user.totalTime
+        user: {
+          email: user.email,
+          name: user.name,
+          story: user.story,
+          role: user.role,
+          status: user.status,
+          totalScore: user.totalScore,
+          totalTime: user.totalTime
+        }
       });
       return;
     }
@@ -179,12 +181,10 @@ export default class UsersController {
 
   }
 
-  public getUserStat = async (req: Request, res: Response): Promise<void> => {
+  public updateStat = async (req: Request, res: Response): Promise<void> => {
     let users = await UsersModel.getUsers();
     StatHelper.updateStatistic(users);
-    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx'), function (err) {
-      console.log(err);
-    })
+    ResponseUtils.json(res, true);
     return;
   }
 
@@ -206,7 +206,7 @@ export default class UsersController {
 
   public sendSupportEmail = async (req: Request, res: Response): Promise<void> => {
     let { email, name, text } = req.body;
-    console.log(await MailHelper.sendMail(email, feedbackText(name, text), 'Підтвердження відправки листа розробникам'));
+    await MailHelper.sendMail(email, feedbackText(name, text), 'Підтвердження відправки листа розробникам');
     ResponseUtils.json(res, true);
     return;
   }

@@ -42,8 +42,8 @@ export default class UsersRoute {
 			usersController.checkUserCode
 		);
 
-		app.route("/v1/users/stat").get(
-			usersController.getUserStat
+		app.route("/v1/users/stat").post(
+			usersController.updateStat
 		)
 
 		app.route("/v1/users/stories/clean").delete(
