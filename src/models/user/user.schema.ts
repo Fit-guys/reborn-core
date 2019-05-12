@@ -1,18 +1,19 @@
 import { Schema } from 'mongoose';
 import { isEmail } from 'validator';
+import UserHelper from "../../helpers/userHelper"
 import { hash } from 'bcrypt';
+import { userInfo } from 'os';
 
 const gameSchema: Schema = new Schema({
     game_id: Schema.Types.Number,
     score: Schema.Types.Number,
-    time: Schema.Types.String
+    time: Schema.Types.Number
 }, { usePushEach: true });
 
 const UserSchema: Schema = new Schema({
     name: {
         type: Schema.Types.String,
         trim: true,
-        unique: [true, "User with this already exist"],
         required: [true, "Name required"]
     },
     role: {
@@ -22,7 +23,8 @@ const UserSchema: Schema = new Schema({
     },
     status: {
         type: Schema.Types.String,
-        default: 'Рядовой'
+        enum: UserHelper.userStatuses,
+        default: UserHelper.userStatuses[0]
     },
     email: {
         type: Schema.Types.String,
@@ -47,7 +49,13 @@ const UserSchema: Schema = new Schema({
     google_id: {
         type: Schema.Types.Number,
     },
-    story: [gameSchema]
+    story: [gameSchema],
+    totalScore: {
+        type: Schema.Types.Number,
+    },
+    totalTime: {
+        type: Schema.Types.Number,
+    }
 }, { usePushEach: true });
 
 UserSchema.pre('save', function (next) {
@@ -57,6 +65,12 @@ UserSchema.pre('save', function (next) {
                 this.password = hashPassword
                 next();
             })
+    } else if (this.modifiedPaths().includes('story')) {
+        const {totalTime, totalScore} = UserHelper.getTotalScoreAndTime(this);
+        this.totalTime = totalTime;
+        this.totalScore = totalScore;
+        this.status = UserHelper.getUserStatus(this);
+        next();
     } else {
         next();
     }
