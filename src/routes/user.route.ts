@@ -10,6 +10,10 @@ export default class UsersRoute {
 			res.status(500).send('Something broke!');
 		});
 
+		app.route("/v1/users/register").options(function (err: Error, req: Request, res: Response, next: NextFunction) {
+			res.status(200).send('YAY OPTIONS!');
+		});
+
 		app.route("/v1/users/login").post(
 			usersController.loginWithEmail
 		);
