@@ -6,7 +6,7 @@ import { StatHelper } from "../helpers/statisticHelper"
 import { forgotPasswordText, feedbackText } from "../config/texts"
 
 export default class UsersController {
-  public user:User;
+  public user: User;
 
   public loginWithEmail = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
@@ -53,18 +53,17 @@ export default class UsersController {
   }
 
   public getUserData = async (req: Request, res: Response): Promise<void> => {
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-
-    if (user && type == 'full') {
+    if (this.user) {
       ResponseUtils.json(res, true, {
         user: {
-          email: user.email,
-          name: user.name,
-          story: user.story,
-          role: user.role,
-          status: user.status,
-          totalScore: user.totalScore,
-          totalTime: user.totalTime
+          email: this.user.email,
+          name: this.user.name,
+          story: this.user.story,
+          role: this.user.role,
+          status: this.user.status,
+          rate: this.user.rate,
+          totalScore: this.user.totalScore,
+          totalTime: this.user.totalTime
         }
       });
       return;
@@ -100,9 +99,8 @@ export default class UsersController {
 
     const { newPassword } = req.body;
 
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-    if (user) {
-      await UsersModel.updateUserPassword(user, newPassword);
+    if (this.user) {
+      await UsersModel.updateUserPassword(this.user, newPassword);
       ResponseUtils.json(res, true);
       return;
     }
@@ -119,9 +117,8 @@ export default class UsersController {
   public addUserStory = async (req: Request, res: Response): Promise<void> => {
     const game_data = req.body;
 
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-    if (user && type == 'full') {
-      await UsersModel.addUserStory(user, game_data);
+    if (this.user) {
+      await UsersModel.addUserStory(this.user, game_data);
       ResponseUtils.json(res, true);
       return;
     }
@@ -138,9 +135,8 @@ export default class UsersController {
   public getUserStories = async (req: Request, res: Response): Promise<void> => {
     const game_id = req.param('game_id');
 
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-    if (user && type == 'full') {
-      ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(user, +game_id) });
+    if (this.user) {
+      ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(this.user, +game_id) });
       return;
     }
 
@@ -179,8 +175,7 @@ export default class UsersController {
   }
 
   public removeUserStories = async (req: Request, res: Response): Promise<void> => {
-    let data = await this.getUserByAuthHeader(req.headers.authorization);
-    if (data.type != 'full') {
+    if (this.user) {
       ResponseUtils.json(res, false, createError(
         403,
         'Not full token',
@@ -189,7 +184,7 @@ export default class UsersController {
       return;
     }
 
-    await UsersModel.delteUserStories(data.user);
+    await UsersModel.delteUserStories(this.user);
     ResponseUtils.json(res, true);
     return;
   }
@@ -202,9 +197,8 @@ export default class UsersController {
   }
 
   public rateGame = async (req: Request, res: Response): Promise<void> => {
-    let data = await this.getUserByAuthHeader(req.headers.authorization);
     let { rate } = req.body;
-    if (!(data.user && data.type == 'full')) {
+    if (!this.user) {
       ResponseUtils.json(res, false, createError(
         403,
         'Not full token or user not register',
@@ -213,12 +207,12 @@ export default class UsersController {
       return;
     }
 
-    await UsersModel.update({ email: data.user.email }, { rate: rate })
+    await UsersModel.update({ email: this.user.email }, { rate: rate })
     ResponseUtils.json(res, true);
     return;
   }
 
-  private getUserByAuthHeader = async (header: string) => {
+  public getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');
     const type = auth[0];
     const token = auth[1];
