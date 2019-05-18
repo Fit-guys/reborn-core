@@ -52,11 +52,11 @@ export class StatHelper {
 
     private static async addTotalStat(users: User[], doc) {
         for (let i = 0; i < users.length; i++) {
-            await promisify(doc.addRow)(4, {
+            doc.addRow(4, {
                 'User_name': users[i].name,
                 'Total_score': users[i].totalScore,
                 'Total_time': users[i].totalTime
-            });
+            }, () => { });
         }
     }
 
@@ -100,7 +100,7 @@ export class StatHelper {
                 'User_name': users[i].name,
                 'Role': users[i].role,
                 'Status': users[i].status
-            });
+            }, () => { });
         }
     }
 

@@ -69,7 +69,7 @@ export default class UsersController {
 
     if (user) {
       UsersModel.generateUserCode(user);
-      await MailHelper.sendMail(user.email, forgotPasswordText(user.name, user.code.toString()))
+      MailHelper.sendMail(user.email, forgotPasswordText(user.name, user.code.toString()))
     } else {
       ResponseUtils.json(res, false, createError(
         403,

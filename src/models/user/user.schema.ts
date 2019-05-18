@@ -2,7 +2,6 @@ import { Schema } from 'mongoose';
 import { isEmail } from 'validator';
 import UserHelper from "../../helpers/userHelper"
 import { hash } from 'bcrypt';
-import { userInfo } from 'os';
 
 const gameSchema: Schema = new Schema({
     game_id: Schema.Types.Number,
