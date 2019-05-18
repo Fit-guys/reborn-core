@@ -31,3 +31,14 @@ export const feedbackText = (name: string, text: string) => {
     <q>${text}</q>`
 }
 
+export const registerText = (name: string) => {
+    return `Вітаємо, Шановний(а) ${name}!
+    <p>
+    Дякуємо, що зареєструвались у нашому веб-порталі «Cyber Unicorns: reborn».
+    <p>
+    Сподіваємось, що Вам сподобається провести час на нашому ресурсі.
+    <p>
+    З повагою
+    команда розробників «Cyber Unicorns: reborn».`
+}
+

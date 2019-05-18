@@ -3,7 +3,8 @@ import { UsersModel, User } from '../models/user';
 import { ResponseUtils, createError } from '../utils/response';
 import MailHelper from '../helpers/mailer'
 import { StatHelper } from "../helpers/statisticHelper"
-import { forgotPasswordText, feedbackText } from "../config/texts"
+import { forgotPasswordText, feedbackText, registerText } from "../config/texts"
+import { text } from 'body-parser';
 
 export default class UsersController {
   public user: User;
@@ -41,6 +42,7 @@ export default class UsersController {
 
     try {
       const token = await UsersModel.create(name, email, password);
+      await MailHelper.sendMail(email, registerText(name), 'Реєстрація у веб-порталі «Cyber Unicorns: reborn»');
       ResponseUtils.json(res, true, token);
     } catch (err) {
       ResponseUtils.json(res, false, createError(
