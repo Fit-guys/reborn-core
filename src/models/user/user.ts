@@ -6,6 +6,7 @@ export interface User extends Document {
   password: string;
   code: number;
   role: string;
+  rate: string,
   status: string;
   g_id: number;
   totalScore: number;

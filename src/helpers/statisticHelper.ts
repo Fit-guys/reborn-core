@@ -1,4 +1,4 @@
-import { User } from "models/user";
+import { User } from '../models/user/user';
 const excel = require('excel4node');
 import GoogleSpreadsheet = require('google-spreadsheet');
 const creds = require('../../credentials/client_spreadsheets_secret.json');
@@ -62,7 +62,7 @@ export class StatHelper {
 
     private static async addScoreStat(users: User[], doc) {
         for (let i = 0; i < users.length; i++) {
-            if (users[i].story) {
+            if (users[i].story && users[i].story.length > 0) {
                 await promisify(doc.addRow)(3, {
                     'User_name': users[i].name,
                     'Game_id': users[i].story[0].game_id,

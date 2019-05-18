@@ -3,6 +3,7 @@ import { User } from './user';
 import UserSchema from './user.schema';
 import config from '../../config/config';
 import * as jwt from 'jsonwebtoken';
+import { compare } from 'bcrypt';
 
 export class UsersModel {
   private static _collectionName: string = 'Users';
@@ -93,6 +94,32 @@ export class UsersModel {
     }
 
     return stories;
+  }
+
+  public static getUserPublicData(user: User) {
+    return {
+      email: user.email,
+      name: user.name,
+      story: user.story,
+      role: user.role,
+      status: user.status,
+      rate: user.rate,
+      totalScore: user.totalScore,
+      totalTime: user.totalTime
+    }
+  }
+
+  public static async rateGame(user: User, rate: string) {
+    user.rate = rate;
+    user.markModified('rate');
+    return await user.save()
+  }
+
+  public static async validateUserPassword(user: User, password: string) {
+    if (user) {
+      return await compare(password, user.password);
+    }
+    return false;
   }
 
 }

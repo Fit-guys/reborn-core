@@ -3,6 +3,9 @@ import { usersController } from "../controllers/user.controller";
 import { NextFunction } from "connect";
 
 export default class UsersRoute {
+	public static private = ['/v1/users/get', '/v1/users/story', '/v1/users/stories', '/v1/users/stories/clean', '/v1/users/rate'];
+	public static protected = ['/v1/users/changePassword'];
+
 	constructor(app: Express) {
 
 		app.use(function (err: Error, req: Request, res: Response, next: NextFunction) {
@@ -10,9 +13,7 @@ export default class UsersRoute {
 			res.status(500).send('Something broke!');
 		});
 
-		app.route("/v1/users/register").options(function (err: Error, req: Request, res: Response, next: NextFunction) {
-			res.status(200).send('YAY OPTIONS!');
-		});
+		app.use(usersController.authUser);
 
 		app.route("/v1/users/login").post(
 			usersController.loginWithEmail
@@ -56,6 +57,10 @@ export default class UsersRoute {
 
 		app.route("/v1/users/feedback").post(
 			usersController.sendSupportEmail
+		)
+
+		app.route("/v1/users/rate").post(
+			usersController.rateGame
 		)
 
 	}

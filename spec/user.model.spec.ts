@@ -1,7 +1,8 @@
-import { UsersModel, User } from '../src/models/user';
+import { UsersModel } from '../src/models/user';
 import { after } from 'mocha';
 import config from "../src/config/config";
 import { compare } from 'bcrypt';
+
 var mongoose = require('mongoose');
 
 describe("UserModel Test", function () {
@@ -168,6 +169,21 @@ describe("UserModel Test", function () {
                 done(new Error(err));
             })
     });
+
+    it('Can rate game', (done) => {
+        UsersModel.findOneByJwtToken(token)
+            .then((result) => {
+                return UsersModel.rateGame(result.user, '10')
+            }).then((user) => {
+                if (user.rate == '10') {
+                    done()
+                }
+            })
+            .catch((err) => {
+                done(new Error(err));
+            })
+    });
+
 
     after(() => {
         UsersModel.remove({ name: testName })

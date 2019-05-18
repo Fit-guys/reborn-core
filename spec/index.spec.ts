@@ -1,9 +1,7 @@
 import { UsersModel, User } from '../src/models/user';
 import { after } from 'mocha';
-import config from "../src/config/config";
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
-import UserHelper from '../src/helpers/userHelper';
 import { StatHelper } from '../src/helpers/statisticHelper';
 
 chai.use(chaiHttp)
@@ -121,6 +119,17 @@ describe('Endpoints test', () => {
     return chai.request("localhost:3000")
       .post(`/v1/users/feedback`)
       .send({ email: testEmail, text: "Test text", name: 'Test name' })
+      .then((res) => {
+        chai.expect(res.status).to.eql(200);
+        chai.expect(res.body.status).to.eql(true);
+      })
+  })
+
+  it('Can rate game', () => {
+    return chai.request("localhost:3000")
+      .post(`/v1/users/rate`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rate: 10 })
       .then((res) => {
         chai.expect(res.status).to.eql(200);
         chai.expect(res.body.status).to.eql(true);

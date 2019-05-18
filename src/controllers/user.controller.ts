@@ -1,37 +1,29 @@
 import { Request, Response } from 'express';
-import { compare } from 'bcrypt';
-import { UsersModel } from '../models/user';
+import { UsersModel, User } from '../models/user';
 import { ResponseUtils, createError } from '../utils/response';
 import MailHelper from '../helpers/mailer'
 import { StatHelper } from "../helpers/statisticHelper"
-import { forgotPasswordText, feedbackText } from "../config/texts"
-const path = require('path');
-
+import { forgotPasswordText, feedbackText, registerText } from "../config/texts"
+import { NextFunction } from 'connect';
+import UsersRoute from '../routes/user.route';
 
 export default class UsersController {
+  public user: User;
+
   public loginWithEmail = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 
     const user = await UsersModel.findOne({ email });
-
-    if (user) {
-      const match = await compare(password, user.password);
-      if (match) {
-        ResponseUtils.json(res, true, UsersModel.createUserJwtToken(user));
-        return;
-      }
-      ResponseUtils.json(res, false, createError(
-        403,
-        'Password is wrong',
-        { error: `User's password is not '${password}'.` }
-      ));
+    const match = await UsersModel.validateUserPassword(user, password);
+    if (match) {
+      ResponseUtils.json(res, true, UsersModel.createUserJwtToken(user));
       return;
     }
 
     ResponseUtils.json(res, false, createError(
       404,
-      'User not found',
-      { error: `There are no user with email '${email}'.` }
+      'not valid password or user',
+      { error: `empty user or password is wrong` }
     ));
   }
 
@@ -51,6 +43,7 @@ export default class UsersController {
 
     try {
       const token = await UsersModel.create(name, email, password);
+      MailHelper.sendMail(email, registerText(name), 'Реєстрація у веб-порталі «Cyber Unicorns: reborn»');
       ResponseUtils.json(res, true, token);
     } catch (err) {
       ResponseUtils.json(res, false, createError(
@@ -63,27 +56,10 @@ export default class UsersController {
   }
 
   public getUserData = async (req: Request, res: Response): Promise<void> => {
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-
-    if (user && type == 'full') {
-      ResponseUtils.json(res, true, {
-        user: {
-          email: user.email,
-          name: user.name,
-          story: user.story,
-          role: user.role,
-          status: user.status,
-          totalScore: user.totalScore,
-          totalTime: user.totalTime
-        }
-      });
-      return;
-    }
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User is not found",
-      {}
-    ));
+    ResponseUtils.json(res, true, {
+      user: UsersModel.getUserPublicData(this.user)
+    });
+    return;
   }
 
   public forgotPassword = async (req: Request, res: Response): Promise<void> => {
@@ -110,37 +86,16 @@ export default class UsersController {
 
     const { newPassword } = req.body;
 
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-    if (user) {
-      await UsersModel.updateUserPassword(user, newPassword);
-      ResponseUtils.json(res, true);
-      return;
-    }
-
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User not found",
-      {}
-    ));
+    await UsersModel.updateUserPassword(this.user, newPassword);
+    ResponseUtils.json(res, true);
     return;
-
   }
 
   public addUserStory = async (req: Request, res: Response): Promise<void> => {
     const game_data = req.body;
 
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-    if (user && type == 'full') {
-      await UsersModel.addUserStory(user, game_data);
-      ResponseUtils.json(res, true);
-      return;
-    }
-
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User not found",
-      {}
-    ));
+    await UsersModel.addUserStory(this.user, game_data);
+    ResponseUtils.json(res, true);
     return;
 
   }
@@ -148,19 +103,8 @@ export default class UsersController {
   public getUserStories = async (req: Request, res: Response): Promise<void> => {
     const game_id = req.param('game_id');
 
-    let { user, type } = await this.getUserByAuthHeader(req.headers.authorization);
-    if (user && type == 'full') {
-      ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(user, +game_id) });
-      return;
-    }
-
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User not found",
-      {}
-    ));
+    ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(this.user, +game_id) });
     return;
-
   }
 
   public checkUserCode = async (req: Request, res: Response): Promise<void> => {
@@ -189,17 +133,7 @@ export default class UsersController {
   }
 
   public removeUserStories = async (req: Request, res: Response): Promise<void> => {
-    let data = await this.getUserByAuthHeader(req.headers.authorization);
-    if (data.type != 'full') {
-      ResponseUtils.json(res, false, createError(
-        403,
-        'Not full token',
-        {}
-      ));
-      return;
-    }
-
-    await UsersModel.delteUserStories(data.user);
+    await UsersModel.delteUserStories(this.user);
     ResponseUtils.json(res, true);
     return;
   }
@@ -211,7 +145,45 @@ export default class UsersController {
     return;
   }
 
-  private getUserByAuthHeader = async (header: string) => {
+  public rateGame = async (req: Request, res: Response): Promise<void> => {
+    let { rate } = req.body;
+
+    let user = await UsersModel.rateGame(this.user, rate);
+    if (user.rate == rate) {
+      ResponseUtils.json(res, true);
+      return;
+    }
+    ResponseUtils.json(res, false, createError(500, "Something wrong", {}));
+  }
+
+  public authUser = async (req: Request, res: Response, next: NextFunction) => {
+    let data = { user: null, type: null };
+    if (req.headers.authorization) {
+      data = await usersController.getUserByAuthHeader(req.headers.authorization);
+    }
+
+    if (UsersRoute.private.includes(req.path)) {
+      usersController.user = data.type == 'full' ? data.user : null;
+    } else if (UsersRoute.protected.includes(req.path)) {
+      usersController.user = data.user;
+    } else {
+      next();
+      return;
+    }
+
+    if (usersController.user) {
+      next();
+    } else {
+      ResponseUtils.json(res, false, createError(
+        404,
+        "User not found",
+        {}
+      ));
+    }
+
+  }
+
+  public getUserByAuthHeader = async (header: string) => {
     const auth = header.split(' ');
     const type = auth[0];
     const token = auth[1];

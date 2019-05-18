@@ -4,12 +4,12 @@ import { UsersModel } from '../models/user';
 export default class UserHelper {
 
     public static userStatuses = [
-        'Cолдат',
-        'Сержант',
-        'Лейтенант',
-        'Майор',
-        'Полковник',
-        'Генерал'
+        'Учень',
+        'Студент',
+        'Джуніор',
+        'Мідл',
+        'Сеньйор',
+        'Бос'
     ];
     public static getUserStatus(user: User) {
         const sum = user.totalScore - user.totalTime * 0.1
