@@ -3,7 +3,7 @@ import { usersController } from "../controllers/user.controller";
 import { NextFunction } from "connect";
 
 export default class UsersRoute {
-	private static private = ['/v1/users/get', '/v1/users/story', '/v1/users/stories', '/v1/users/stories/clean', '/v1/users/rate'];
+	public static private = ['/v1/users/get', '/v1/users/story', '/v1/users/stories', '/v1/users/stories/clean', '/v1/users/rate'];
 	public static protected = ['/v1/users/changePassword'];
 
 	constructor(app: Express) {
@@ -13,21 +13,7 @@ export default class UsersRoute {
 			res.status(500).send('Something broke!');
 		});
 
-		app.use(async function (req: Request, res: Response, next: NextFunction) {
-
-			let data = { user: null, type: null };
-			if (req.headers.authorization) {
-				data = await usersController.getUserByAuthHeader(req.headers.authorization);
-			}
-			
-			if (UsersRoute.private.includes(req.path)) {
-				usersController.user = data.type == 'full' ? data.user : null;
-			} else if (UsersRoute.protected.includes(req.path)) {
-				usersController.user = data.user;
-			}
-
-			next();
-		});
+		app.use(usersController.authUser);
 
 		app.route("/v1/users/login").post(
 			usersController.loginWithEmail

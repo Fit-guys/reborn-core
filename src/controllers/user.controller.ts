@@ -4,7 +4,8 @@ import { ResponseUtils, createError } from '../utils/response';
 import MailHelper from '../helpers/mailer'
 import { StatHelper } from "../helpers/statisticHelper"
 import { forgotPasswordText, feedbackText, registerText } from "../config/texts"
-import { text } from 'body-parser';
+import { NextFunction } from 'connect';
+import UsersRoute from '../routes/user.route';
 
 export default class UsersController {
   public user: User;
@@ -42,7 +43,7 @@ export default class UsersController {
 
     try {
       const token = await UsersModel.create(name, email, password);
-      await MailHelper.sendMail(email, registerText(name), 'Реєстрація у веб-порталі «Cyber Unicorns: reborn»');
+      MailHelper.sendMail(email, registerText(name), 'Реєстрація у веб-порталі «Cyber Unicorns: reborn»');
       ResponseUtils.json(res, true, token);
     } catch (err) {
       ResponseUtils.json(res, false, createError(
@@ -55,26 +56,10 @@ export default class UsersController {
   }
 
   public getUserData = async (req: Request, res: Response): Promise<void> => {
-    if (this.user) {
-      ResponseUtils.json(res, true, {
-        user: {
-          email: this.user.email,
-          name: this.user.name,
-          story: this.user.story,
-          role: this.user.role,
-          status: this.user.status,
-          rate: this.user.rate,
-          totalScore: this.user.totalScore,
-          totalTime: this.user.totalTime
-        }
-      });
-      return;
-    }
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User is not found",
-      {}
-    ));
+    ResponseUtils.json(res, true, {
+      user: UsersModel.getUserPublicData(this.user)
+    });
+    return;
   }
 
   public forgotPassword = async (req: Request, res: Response): Promise<void> => {
@@ -101,35 +86,16 @@ export default class UsersController {
 
     const { newPassword } = req.body;
 
-    if (this.user) {
-      await UsersModel.updateUserPassword(this.user, newPassword);
-      ResponseUtils.json(res, true);
-      return;
-    }
-
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User not found",
-      {}
-    ));
+    await UsersModel.updateUserPassword(this.user, newPassword);
+    ResponseUtils.json(res, true);
     return;
-
   }
 
   public addUserStory = async (req: Request, res: Response): Promise<void> => {
     const game_data = req.body;
 
-    if (this.user) {
-      await UsersModel.addUserStory(this.user, game_data);
-      ResponseUtils.json(res, true);
-      return;
-    }
-
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User not found",
-      {}
-    ));
+    await UsersModel.addUserStory(this.user, game_data);
+    ResponseUtils.json(res, true);
     return;
 
   }
@@ -137,18 +103,8 @@ export default class UsersController {
   public getUserStories = async (req: Request, res: Response): Promise<void> => {
     const game_id = req.param('game_id');
 
-    if (this.user) {
-      ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(this.user, +game_id) });
-      return;
-    }
-
-    ResponseUtils.json(res, false, createError(
-      404,
-      "User not found",
-      {}
-    ));
+    ResponseUtils.json(res, true, { stories: UsersModel.getUserStories(this.user, +game_id) });
     return;
-
   }
 
   public checkUserCode = async (req: Request, res: Response): Promise<void> => {
@@ -177,15 +133,6 @@ export default class UsersController {
   }
 
   public removeUserStories = async (req: Request, res: Response): Promise<void> => {
-    if (this.user) {
-      ResponseUtils.json(res, false, createError(
-        403,
-        'Not full token',
-        {}
-      ));
-      return;
-    }
-
     await UsersModel.delteUserStories(this.user);
     ResponseUtils.json(res, true);
     return;
@@ -200,18 +147,40 @@ export default class UsersController {
 
   public rateGame = async (req: Request, res: Response): Promise<void> => {
     let { rate } = req.body;
-    if (!this.user) {
-      ResponseUtils.json(res, false, createError(
-        403,
-        'Not full token or user not register',
-        {}
-      ));
+
+    let user = await UsersModel.rateGame(this.user, rate);
+    if (user.rate == rate) {
+      ResponseUtils.json(res, true);
+      return;
+    }
+    ResponseUtils.json(res, false, createError(500, "Something wrong", {}));
+  }
+
+  public authUser = async (req: Request, res: Response, next: NextFunction) => {
+    let data = { user: null, type: null };
+    if (req.headers.authorization) {
+      data = await usersController.getUserByAuthHeader(req.headers.authorization);
+    }
+
+    if (UsersRoute.private.includes(req.path)) {
+      usersController.user = data.type == 'full' ? data.user : null;
+    } else if (UsersRoute.protected.includes(req.path)) {
+      usersController.user = data.user;
+    } else {
+      next();
       return;
     }
 
-    await UsersModel.update({ email: this.user.email }, { rate: rate })
-    ResponseUtils.json(res, true);
-    return;
+    if (usersController.user) {
+      next();
+    } else {
+      ResponseUtils.json(res, false, createError(
+        404,
+        "User not found",
+        {}
+      ));
+    }
+
   }
 
   public getUserByAuthHeader = async (header: string) => {

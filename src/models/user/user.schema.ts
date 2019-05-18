@@ -74,6 +74,9 @@ UserSchema.pre('save', function (next) {
         this.status = UserHelper.getUserStatus(this);
         next();
     } else {
+        if (!UserHelper.userStatuses.includes(this.status)) {
+            this.status = UserHelper.getUserStatus(this);
+        }
         next();
     }
 });

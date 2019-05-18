@@ -96,6 +96,25 @@ export class UsersModel {
     return stories;
   }
 
+  public static getUserPublicData(user: User) {
+    return {
+      email: user.email,
+      name: user.name,
+      story: user.story,
+      role: user.role,
+      status: user.status,
+      rate: user.rate,
+      totalScore: user.totalScore,
+      totalTime: user.totalTime
+    }
+  }
+
+  public static async rateGame(user: User, rate: string) {
+    user.rate = rate;
+    user.markModified('rate');
+    return await user.save()
+  }
+
   public static async validateUserPassword(user: User, password: string) {
     if (user) {
       return await compare(password, user.password);
