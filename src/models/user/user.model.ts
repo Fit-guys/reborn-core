@@ -3,6 +3,7 @@ import { User } from './user';
 import UserSchema from './user.schema';
 import config from '../../config/config';
 import * as jwt from 'jsonwebtoken';
+import { compare } from 'bcrypt';
 
 export class UsersModel {
   private static _collectionName: string = 'Users';
@@ -93,6 +94,13 @@ export class UsersModel {
     }
 
     return stories;
+  }
+
+  public static async validateUserPassword(user: User, password: string) {
+    if (user) {
+      return await compare(password, user.password);
+    }
+    return false;
   }
 
 }

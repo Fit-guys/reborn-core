@@ -1,37 +1,27 @@
 import { Request, Response } from 'express';
-import { compare } from 'bcrypt';
-import { UsersModel } from '../models/user';
+import { UsersModel, User } from '../models/user';
 import { ResponseUtils, createError } from '../utils/response';
 import MailHelper from '../helpers/mailer'
 import { StatHelper } from "../helpers/statisticHelper"
 import { forgotPasswordText, feedbackText } from "../config/texts"
-const path = require('path');
-
 
 export default class UsersController {
+  public user:User;
+
   public loginWithEmail = async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 
     const user = await UsersModel.findOne({ email });
-
-    if (user) {
-      const match = await compare(password, user.password);
-      if (match) {
-        ResponseUtils.json(res, true, UsersModel.createUserJwtToken(user));
-        return;
-      }
-      ResponseUtils.json(res, false, createError(
-        403,
-        'Password is wrong',
-        { error: `User's password is not '${password}'.` }
-      ));
+    const match = await UsersModel.validateUserPassword(user, password);
+    if (match) {
+      ResponseUtils.json(res, true, UsersModel.createUserJwtToken(user));
       return;
     }
 
     ResponseUtils.json(res, false, createError(
       404,
-      'User not found',
-      { error: `There are no user with email '${email}'.` }
+      'not valid password or user',
+      { error: `empty user or password is wrong` }
     ));
   }
 
@@ -207,6 +197,23 @@ export default class UsersController {
   public sendSupportEmail = async (req: Request, res: Response): Promise<void> => {
     let { email, name, text } = req.body;
     await MailHelper.sendMail(email, feedbackText(name, text), 'Підтвердження відправки листа розробникам');
+    ResponseUtils.json(res, true);
+    return;
+  }
+
+  public rateGame = async (req: Request, res: Response): Promise<void> => {
+    let data = await this.getUserByAuthHeader(req.headers.authorization);
+    let { rate } = req.body;
+    if (!(data.user && data.type == 'full')) {
+      ResponseUtils.json(res, false, createError(
+        403,
+        'Not full token or user not register',
+        {}
+      ));
+      return;
+    }
+
+    await UsersModel.update({ email: data.user.email }, { rate: rate })
     ResponseUtils.json(res, true);
     return;
   }

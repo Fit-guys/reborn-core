@@ -23,8 +23,10 @@ const UserSchema: Schema = new Schema({
     },
     status: {
         type: Schema.Types.String,
-        enum: UserHelper.userStatuses,
         default: UserHelper.userStatuses[0]
+    },
+    rate: {
+        type: Schema.Types.Number,
     },
     email: {
         type: Schema.Types.String,
@@ -58,6 +60,7 @@ const UserSchema: Schema = new Schema({
 }, { usePushEach: true });
 
 UserSchema.pre('save', function (next) {
+
     if (this.modifiedPaths().includes('password')) {
         hash(this.password, 12)
             .then((hashPassword) => {
@@ -65,7 +68,7 @@ UserSchema.pre('save', function (next) {
                 next();
             })
     } else if (this.modifiedPaths().includes('story')) {
-        const {totalTime, totalScore} = UserHelper.getTotalScoreAndTime(this);
+        const { totalTime, totalScore } = UserHelper.getTotalScoreAndTime(this);
         this.totalTime = totalTime;
         this.totalScore = totalScore;
         this.status = UserHelper.getUserStatus(this);

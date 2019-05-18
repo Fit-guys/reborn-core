@@ -54,5 +54,9 @@ export default class UsersRoute {
 			usersController.sendSupportEmail
 		)
 
+		app.route("/v1/users/rate").post(
+			usersController.rateGame
+		)
+
 	}
 }
