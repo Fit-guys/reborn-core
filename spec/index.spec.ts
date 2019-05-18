@@ -52,7 +52,7 @@ describe('Endpoints test', () => {
       })
   })
 
-  it.skip('Forgot user password', () => {
+  it('Forgot user password', () => {
 
     return chai.request("localhost:3000")
       .post(`/v1/users/forgotPassword`)
@@ -96,7 +96,7 @@ describe('Endpoints test', () => {
       })
   })
 
-  it.skip('Update statistic', () => {
+  it('Update statistic', () => {
     return chai.request("localhost:3000")
       .post(`/v1/users/stat`)
       .then((res) => {
@@ -115,7 +115,7 @@ describe('Endpoints test', () => {
       })
   })
 
-  it.skip('Can send message to support', () => {
+  it('Can send message to support', () => {
     return chai.request("localhost:3000")
       .post(`/v1/users/feedback`)
       .send({ email: testEmail, text: "Test text", name: 'Test name' })

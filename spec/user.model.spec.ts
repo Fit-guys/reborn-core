@@ -1,7 +1,8 @@
-import { UsersModel, User } from '../src/models/user';
+import { UsersModel } from '../src/models/user';
 import { after } from 'mocha';
 import config from "../src/config/config";
 import { compare } from 'bcrypt';
+
 var mongoose = require('mongoose');
 
 describe("UserModel Test", function () {
