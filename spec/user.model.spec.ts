@@ -169,6 +169,21 @@ describe("UserModel Test", function () {
             })
     });
 
+    it('Can rate game', (done) => {
+        UsersModel.findOneByJwtToken(token)
+            .then((result) => {
+                return UsersModel.rateGame(result.user, '10')
+            }).then((user) => {
+                if (user.rate == '10') {
+                    done()
+                }
+            })
+            .catch((err) => {
+                done(new Error(err));
+            })
+    });
+
+
     after(() => {
         UsersModel.remove({ name: testName })
     })

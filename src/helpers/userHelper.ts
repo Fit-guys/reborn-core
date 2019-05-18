@@ -6,10 +6,10 @@ export default class UserHelper {
     public static userStatuses = [
         'Учень',
         'Студент',
-        'Джуниор',
-        'Мидл',
-        'Синьйор',
-        'Босс'
+        'Джуніор',
+        'Мідл',
+        'Сеньйор',
+        'Бос'
     ];
     public static getUserStatus(user: User) {
         const sum = user.totalScore - user.totalTime * 0.1
