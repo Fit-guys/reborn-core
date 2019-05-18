@@ -47,7 +47,7 @@ export default class UsersRoute {
 			usersController.checkUserCode
 		);
 
-		app.route("/v1/users/stat").post(
+		app.route("/v1/users/stat").get(
 			usersController.updateStat
 		)
 
