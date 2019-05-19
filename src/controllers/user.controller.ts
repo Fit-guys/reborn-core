@@ -6,7 +6,6 @@ import { StatHelper } from "../helpers/statisticHelper"
 import { forgotPasswordText, feedbackText, registerText } from "../config/texts"
 import { NextFunction } from 'connect';
 import UsersRoute from '../routes/user.route';
-const path = require('path');
 
 export default class UsersController {
   public user: User;
@@ -128,11 +127,8 @@ export default class UsersController {
 
   public updateStat = async (req: Request, res: Response): Promise<void> => {
     let users = await UsersModel.getUsers();
-    StatHelper.updateStat(users);
     res.setHeader("Content-Disposition", "attachment; filename=" + "report.xlsx");
-    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx'), function (err) {
-      console.log(err);
-    })
+    StatHelper.updateStat(users, res);
     return;
   }
 

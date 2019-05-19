@@ -3,9 +3,10 @@ import excel = require('excel4node');
 import GoogleSpreadsheet = require('google-spreadsheet');
 const creds = require('../../credentials/client_spreadsheets_secret.json');
 const { promisify } = require('util')
+import { Response } from "express";
 
 export class StatHelper {
-    public static updateStat(users: User[]) {
+    public static updateStat(users: User[], res: Response) {
 
         let workbook = new excel.Workbook();
 
@@ -13,8 +14,7 @@ export class StatHelper {
         this.generateUserGameScore(workbook, users);
         this.generateUserGameTime(workbook, users);
         this.generateUserTotalStat(workbook, users);
-
-        workbook.write('reports/report.xlsx');
+        workbook.write('report.xlsx', res);
     }
 
     public static generateUserRoleReport(workbook: excel.Workbook, users: User[]) {
