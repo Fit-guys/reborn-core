@@ -1,5 +1,5 @@
 import { User } from '../models/user/user';
-const excel = require('excel4node');
+import excel = require('excel4node');
 import GoogleSpreadsheet = require('google-spreadsheet');
 const creds = require('../../credentials/client_spreadsheets_secret.json');
 const { promisify } = require('util')
@@ -9,33 +9,71 @@ export class StatHelper {
 
         let workbook = new excel.Workbook();
 
-        let roleStat = workbook.addWorksheet('All users');
-        let gameScoreStat = workbook.addWorksheet('Game Score');
+        this.generateUserRoleReport(workbook, users);
+        this.generateUserGameScore(workbook, users);
+        this.generateUserGameTime(workbook, users);
+        this.generateUserTotalStat(workbook, users);
 
-        roleStat.cell(1, 1).string('User name');
-        roleStat.cell(1, 2).string('Role');
-        roleStat.cell(1, 3).string('Status');
+        workbook.write('reports/report.xlsx');
+    }
 
-        gameScoreStat.cell(1, 1).string('User name');
-        gameScoreStat.cell(1, 2).string('Game id');
-        gameScoreStat.cell(1, 3).string('Score');
-        gameScoreStat.cell(1, 4).string('Time');
-
+    public static generateUserRoleReport(workbook: excel.Workbook, users: User[]) {
+        let roleStat = workbook.addWorksheet('Звіт 1');
+        roleStat.cell(1, 1).string('Ім\'я користувача');
+        roleStat.cell(1, 2).string('Статус користувача');
         let i = 2;
-        let j = 2;
         users.forEach((user: User) => {
             roleStat.cell(i, 1).string(user.name);
-            roleStat.cell(i, 2).string(user.role);
-            roleStat.cell(i++, 3).string(user.status);
+            roleStat.cell(i++, 2).string(user.status);
+        });
+    }
 
-            user.story.forEach((story) => {
-                gameScoreStat.cell(j, 1).string(user.name);
-                gameScoreStat.cell(j, 2).string(story.game_id.toString());
-                gameScoreStat.cell(j, 3).string(story.score.toString());
-                gameScoreStat.cell(j++, 4).string(story.time);
-            })
-        })
-        workbook.write('reports/report.xlsx');
+    public static generateUserGameScore(workbook: excel.Workbook, users: User[]) {
+        let roleStat = workbook.addWorksheet('Звіт 2');
+        roleStat.cell(1, 1).string('Ім\'я користувача');
+        roleStat.cell(1, 2).string('Номер гри');
+        roleStat.cell(1, 3).string('Кількість балів');
+        let i = 2;
+        users.forEach((user: User) => {
+            if (user.story && user.story.length > 0) {
+                roleStat.cell(i++, 1).string(user.name);
+                user.story.forEach((story) => {
+                    roleStat.cell(i, 2).number(story.game_id + 1);
+                    roleStat.cell(i++, 3).number(story.score);
+                });
+            }
+        });
+    }
+
+    public static generateUserGameTime(workbook: excel.Workbook, users: User[]) {
+        let stat = workbook.addWorksheet('Звіт 3');
+        stat.cell(1, 1).string('Ім\'я користувача');
+        stat.cell(1, 2).string('Номер гри');
+        stat.cell(1, 3).string('Кількість секунд у грі');
+        let i = 2;
+        users.forEach((user: User) => {
+            if (user.story && user.story.length > 0) {
+                stat.cell(i++, 1).string(user.name);
+                user.story.forEach((story) => {
+                    stat.cell(i, 2).number(story.game_id + 1);
+                    stat.cell(i++, 3).number(story.time);
+                });
+            }
+        });
+    }
+    public static generateUserTotalStat(workbook: excel.Workbook, users: User[]) {
+        let stat = workbook.addWorksheet('Звіт 4');
+        stat.cell(1, 1).string('Ім\'я користувача');
+        stat.cell(1, 2).string('Загальна кількість балів');
+        stat.cell(1, 3).string('Загальна кількість часу');
+        let i = 2;
+        users.forEach((user: User) => {
+            if (user.totalScore && user.totalTime) {
+                stat.cell(i, 1).string(user.name);
+                stat.cell(i, 2).number(user.totalScore);
+                stat.cell(i++, 3).number(user.totalTime);
+            }
+        });
     }
 
     public static async updateStatistic(users: User[]) {
@@ -49,14 +87,13 @@ export class StatHelper {
     }
 
 
-
     private static async addTotalStat(users: User[], doc) {
         for (let i = 0; i < users.length; i++) {
-            await promisify(doc.addRow)(4, {
+            doc.addRow(4, {
                 'User_name': users[i].name,
                 'Total_score': users[i].totalScore,
                 'Total_time': users[i].totalTime
-            });
+            }, () => { });
         }
     }
 
@@ -100,7 +137,7 @@ export class StatHelper {
                 'User_name': users[i].name,
                 'Role': users[i].role,
                 'Status': users[i].status
-            });
+            }, () => { });
         }
     }
 

@@ -6,6 +6,7 @@ import { StatHelper } from "../helpers/statisticHelper"
 import { forgotPasswordText, feedbackText, registerText } from "../config/texts"
 import { NextFunction } from 'connect';
 import UsersRoute from '../routes/user.route';
+const path = require('path');
 
 export default class UsersController {
   public user: User;
@@ -69,7 +70,7 @@ export default class UsersController {
 
     if (user) {
       UsersModel.generateUserCode(user);
-      await MailHelper.sendMail(user.email, forgotPasswordText(user.name, user.code.toString()))
+      MailHelper.sendMail(user.email, forgotPasswordText(user.name, user.code.toString()))
     } else {
       ResponseUtils.json(res, false, createError(
         403,
@@ -127,8 +128,11 @@ export default class UsersController {
 
   public updateStat = async (req: Request, res: Response): Promise<void> => {
     let users = await UsersModel.getUsers();
-    StatHelper.updateStatistic(users);
-    ResponseUtils.json(res, true);
+    StatHelper.updateStat(users);
+    res.setHeader("Content-Disposition", "attachment; filename=" + "report.xlsx");
+    res.sendFile(path.resolve(__dirname + '../../../reports/report.xlsx'), function (err) {
+      console.log(err);
+    })
     return;
   }
 
