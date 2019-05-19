@@ -13,15 +13,15 @@ export default class UserHelper {
     ];
     public static getUserStatus(user: User) {
         const sum = user.totalScore 
-        if (sum > 370) {
+        if (sum > 511) {
             return this.userStatuses[5];
-        } else if (sum > 220) {
+        } else if (sum > 356) {
             return this.userStatuses[4];
-        } else if (sum > 160) {
+        } else if (sum > 286) {
             return this.userStatuses[3];
-        } else if (sum > 100) {
+        } else if (sum > 226) {
             return this.userStatuses[2];
-        } else if (sum > 50) {
+        } else if (sum > 51) {
             return this.userStatuses[1];
         } else {
             return this.userStatuses[0];

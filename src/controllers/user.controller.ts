@@ -127,7 +127,11 @@ export default class UsersController {
 
   public updateStat = async (req: Request, res: Response): Promise<void> => {
     let users = await UsersModel.getUsers();
-    res.setHeader("Content-Disposition", "attachment; filename=" + "report.xlsx");
+    res.header("Content-Disposition", "attachment; filename=" + "report.xlsx");
+    res.header("Content-Type", "application/octet-stream");
+    res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.header("Pragma", "no-cache");
+    res.header("Expires", "0");
     StatHelper.updateStat(users, res);
     return;
   }
