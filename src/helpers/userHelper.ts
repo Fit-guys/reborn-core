@@ -12,16 +12,16 @@ export default class UserHelper {
         'Бос'
     ];
     public static getUserStatus(user: User) {
-        const sum = user.totalScore - user.totalTime * 0.1
-        if (sum > 460) {
+        const sum = user.totalScore 
+        if (sum > 370) {
             return this.userStatuses[5];
-        } else if (sum > 360) {
+        } else if (sum > 220) {
             return this.userStatuses[4];
-        } else if (sum > 260) {
+        } else if (sum > 160) {
             return this.userStatuses[3];
-        } else if (sum > 200) {
+        } else if (sum > 100) {
             return this.userStatuses[2];
-        } else if (sum > 80) {
+        } else if (sum > 50) {
             return this.userStatuses[1];
         } else {
             return this.userStatuses[0];
